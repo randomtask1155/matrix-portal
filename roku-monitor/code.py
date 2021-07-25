@@ -6,6 +6,7 @@ from rtc import RTC
 from digitalio import DigitalInOut
 import time
 
+
 from adafruit_matrixportal.network import Network
 from adafruit_matrixportal.matrix import Matrix
 from adafruit_bitmap_font import bitmap_font
@@ -26,19 +27,23 @@ rokuDevices = {}
 
 
 def getRokuStatus():
-    data = NETWORK.fetch_data(requestURI,json_path=[{'status', 'name', 'events'}])
+    try:
+        data = NETWORK.fetch_data(requestURI,json_path=[{'status', 'name', 'events'}])
+    except:
+        scrollError("getRokuStatus error communicating with hqserver")
+        return
     #print(data)
     jdata = json.loads(data)
     if len(jdata) < 2:
         print(data)
-        print("no rokus found in data")
-        raise
+        scrollError("no rokus found in data")
+        return
     for r in jdata[1]['events']:
         props = r.split(':')
         if len(props) < 3:
             print(rs)
-            print("unable to decode roku properties")
-            raise
+            scrollError("unable to decode roku properties")
+            return
         rokuDevices[props[0]] = props[2]
 
 def addImageToGRoup(g, f):
@@ -56,7 +61,7 @@ def playSplash(g):
     g[0].y = zeroStart[1]
     GROUP[5].text = ""
     GROUP[6].text = ""
-    
+
     for i in range(4):
         addImageToGRoup(g, 'img/tv-guy.bmp')
         DISPLAY.refresh()
@@ -66,30 +71,56 @@ def playSplash(g):
         time.sleep(0.5)
     addImageToGRoup(g, 'img/tv-guy.bmp')
     DISPLAY.refresh()
-    
 
 
+def scrollError(err):
+    GROUP[6].text = ""
+    GROUP[5].text = err
+    resetXY(GROUP)
+    GROUP[0].x = -64
+    GROUP[0].y = -32
+    DISPLAY.refresh()
+    scrollGroup(GROUP[5])
 
-    
+
 def scrollRoku(g, name, app):
-    g[0].x = zeroStart[0]
-    g[0].y = zeroStart[1]
-    g[5].x = fiveStart[0]
-    g[5].y = fiveStart[1]
-    g[6].x = sixStart[0]
-    g[6].y = sixStart[1]
+    resetXY(g)
     addImageToGRoup(g, 'img/tv.bmp')
-    g[5].text = name 
+    g[5].text = name
     g[6].text = app
     DISPLAY.refresh()
     time.sleep(0.5)
-    for i in range(64):
+    scrollALlGroups(g)
+    resetXY(g)
+
+def scrollGroup(g):
+    l = len(g.text)
+    for i in range(math.ceil((l*5))):
+        g.x = g.x - 1
+        time.sleep(.2)
+
+def scrollALlGroups(g):
+    l5 = len(g[5].text)
+    l6 = len(g[6].text)
+    length = 0
+    if l5 > l6:
+        length = math.ceil(l5 *5)
+    else:
+        length = math.ceil(l6 * 5)
+    for i in range(length):
         g[0].x = g[0].x - 1
         g[5].x = g[5].x - 1
         g[6].x = g[6].x - 1
         time.sleep(0.2)
 
 
+def resetXY(g):
+    g[0].x = zeroStart[0]
+    g[0].y = zeroStart[1]
+    g[5].x = fiveStart[0]
+    g[5].y = fiveStart[1]
+    g[6].x = sixStart[0]
+    g[6].y = sixStart[1]
 
 MATRIX = Matrix(bit_depth=BITPLANES)
 DISPLAY = MATRIX.display
@@ -122,7 +153,7 @@ GROUP.append(adafruit_display_text.label.Label(SMALL_FONT, color=0x808080,
 # Element 6 is the current time
 GROUP.append(adafruit_display_text.label.Label(LARGE_FONT, color=0xD04901,
                                                text='12:00', y=-99))
-                                               
+
 zeroStart = [GROUP[0].x, GROUP[0].y]
 fiveStart = [30, 10]
 sixStart = [31, 22]
@@ -136,20 +167,20 @@ GROUP[6].x = sixStart[0]
 GROUP[6].y = sixStart[1]
 DISPLAY.show(GROUP)
 playSplash(GROUP)
+#scrollError("testing error scrolling now")
 
 
-
-NETWORK = Network(status_neopixel=board.NEOPIXEL, debug=False)
-NETWORK.connect()
+try:
+    NETWORK = Network(status_neopixel=board.NEOPIXEL, debug=False)
+    NETWORK.connect()
+except:
+    while True:
+        scrollError("wifi connect failed")
+        time.sleep(3)
 getRokuStatus()
-#print(rokuDevices)
-##print(rokus[1]['events'])
 
 interval=3
-#iterationCount=(interval + (1 - interval) ) * 3600
-#count=iterationCount
 while True:
-    #playSplash(GROUP)
     getRokuStatus()
     isRokuInUse = False
     for k in rokuDevices:
@@ -158,14 +189,5 @@ while True:
             isRokuInUse = True
     if not isRokuInUse:
         playSplash(GROUP)
-    #if getTimeSuccess == False:
-    #    getTimeSuccess = setClock()
-    #if count >= iterationCount:
-    #    NOW = time.time()
-    #    GROUP[6].text = str(math.ceil( (vacationDate - int(time.time()) ) / 60 / 60 / 24)) + " Days"
-    #    DISPLAY.refresh()
-    #    count = 0
-    #count = count + 1
-    #treeBreeze(GROUP[0])
     time.sleep(interval)
 
