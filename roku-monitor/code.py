@@ -179,15 +179,24 @@ except:
         time.sleep(3)
 getRokuStatus()
 
-interval=3
+interval=30
 while True:
     getRokuStatus()
+    foundRokuDevices = {}
     isRokuInUse = False
+    
     for k in rokuDevices:
         if rokuDevices[k] != 'Roku':
-            scrollRoku(GROUP, k, rokuDevices[k])
+            foundRokuDevices[k] = rokuDevices[k]
             isRokuInUse = True
-    if not isRokuInUse:
-        playSplash(GROUP)
-    time.sleep(interval)
-
+            
+    if isRokuInUse:
+        for i in range(interval):
+            for k in foundRokuDevices:
+                scrollRoku(GROUP,k, foundRokuDevices[k])
+            time.sleep(1)            
+    else:
+        for i in range(interval):
+            playSplash(GROUP)
+            time.sleep(0.5)
+            continue
