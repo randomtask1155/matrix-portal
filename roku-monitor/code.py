@@ -179,7 +179,7 @@ except:
         time.sleep(3)
 getRokuStatus()
 
-interval=30
+interval=10
 while True:
     getRokuStatus()
     foundRokuDevices = {}
