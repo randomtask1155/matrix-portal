@@ -20,7 +20,7 @@ except ImportError:
 BITPLANES = 6
 TIMEZONE = secrets['timezone']
 getTimeSuccess = False
-vacationDate=1623474000
+vacationDate=1655078400
 
 def setClock():
     try:
@@ -85,11 +85,11 @@ def addImageToGRoup(g, f):
 
 
 def treeBreeze(g):
-    for x in range(1):
-        addImageToGRoup(g, 'img/palm-trees-' + str(x+1) + '.bmp')
+    for x in range(7):
+        addImageToGRoup(g, 'img/earth/earth-' + str(x+1) + '.bmp')
         DISPLAY.refresh()
         time.sleep(0.2)
-    addImageToGRoup(g, 'img/palm-trees-0.bmp')
+    addImageToGRoup(g, 'img/earth/earth-0.bmp')
 
 
 
@@ -106,7 +106,7 @@ SYMBOL_FONT.load_glyphs('\u21A5\u21A7')
 
 GROUP = displayio.Group(max_size=10)
 try:
-    FILENAME = 'img/palm-trees-0.bmp'
+    FILENAME = 'img/earth/earth-0.bmp'
     BITMAP = displayio.OnDiskBitmap(open(FILENAME, 'rb'))
     TILE_GRID = displayio.TileGrid(BITMAP,
                                    pixel_shader=displayio.ColorConverter(),)
@@ -125,9 +125,9 @@ GROUP.append(adafruit_display_text.label.Label(SMALL_FONT, color=0xD04901,
 # Element 6 is the current time
 GROUP.append(adafruit_display_text.label.Label(LARGE_FONT, color=0x808080,
                                                text='12:00', y=-99))
-GROUP[5].text = "Aulani"
+GROUP[5].text = "Universal"
 GROUP[5].y = 5
-GROUP[5].x = 20
+GROUP[5].x = 11 
 GROUP[6].text = "0 Days"
 GROUP[6].y = 26
 GROUP[6].x = 9
